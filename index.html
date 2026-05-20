@@ -323,6 +323,15 @@ function checkAdmin(){
 }
 function loadAllTrips(){db.ref("trips").on("value",function(snap){allTrips=snap.val()||{};R()})}
 function adminOpenTrip(id){screen="trip";tab=0;loadTrip(id)}
+function adminDeleteTrip(id,name){
+  if(!confirm("Delete trip '"+name+"'?\n\nThis will permanently remove all expenses, payments, and settings for this trip."))return;
+  if(!confirm("Are you absolutely sure? This CANNOT be undone."))return;
+  db.ref("trips/"+id).remove(function(err){
+    if(err)return toast("Error deleting");
+    recentTrips=recentTrips.filter(function(r){return r.id!==id});saveRecent();
+    toast("Trip deleted");R();
+  });
+}
 
 // RENDER
 function R(){
@@ -380,8 +389,11 @@ function R(){
     h+='<div class="header"><div class="brand">TripSplit</div><h1 class="title">Admin</h1><div class="admin-badge">MASTER</div></div>';
     h+='<div class="content"><div class="stitle">All Trips ('+Object.keys(allTrips).length+')</div>';
     Object.keys(allTrips).forEach(function(id){var t=allTrips[id];if(!t.meta)return;
-      h+='<div class="trip-card" onclick="adminOpenTrip(\''+id+'\')"><div class="tc-name">'+esc(t.meta.name)+'</div>';
+      h+='<div class="trip-card"><div style="display:flex;justify-content:space-between;align-items:center">';
+      h+='<div onclick="adminOpenTrip(\''+id+'\')" style="flex:1;cursor:pointer"><div class="tc-name">'+esc(t.meta.name)+'</div>';
       h+='<div class="tc-meta">'+t.meta.people.length+' people &middot; PIN: '+t.meta.pin+'</div></div>';
+      h+='<button class="mbtn dng" style="font-size:11px;padding:4px 10px" onclick="event.stopPropagation();adminDeleteTrip(\''+id+'\',\''+esc(t.meta.name)+'\')">Delete</button>';
+      h+='</div></div>';
     });h+="</div>";
   }
 
