@@ -229,10 +229,16 @@ function calc(){
 function goHome(){syncForm();unloadTrip();screen="home";R()}
 function goCreate(){screen="create";CF={name:"",people:[],newPerson:"",cats:["Transport","Stays","Food","Activities","Misc"],newCat:"",budget:{},pin:""};R()}
 function goJoin(){screen="join";R()}
-function addPersonCF(){var el=document.getElementById("cf-np");var v=el?el.value.trim():"";if(!v)return;if(CF.people.indexOf(v)>=0)return toast("Already added");CF.people.push(v);CF.newPerson="";R()}
-function rmPersonCF(i){CF.people.splice(i,1);R()}
-function addCatCF(){var el=document.getElementById("cf-nc");var v=el?el.value.trim():"";if(!v)return;if(CF.cats.indexOf(v)>=0)return toast("Already exists");if(CF.cats.length>=8)return toast("Max 8 categories");CF.cats.push(v);CF.newCat="";R()}
-function rmCatCF(i){if(CF.cats.length<=1)return toast("Need at least 1");CF.cats.splice(i,1);R()}
+function syncCF(){
+  var el;
+  el=document.getElementById("cf-name");if(el)CF.name=el.value;
+  el=document.getElementById("cf-pin");if(el)CF.pin=el.value;
+  CF.cats.forEach(function(c){el=document.getElementById("cf-b-"+c.replace(/\s/g,"_"));if(el)CF.budget[c]=parseFloat(el.value)||0});
+}
+function addPersonCF(){syncCF();var el=document.getElementById("cf-np");var v=el?el.value.trim():"";if(!v)return;if(CF.people.indexOf(v)>=0)return toast("Already added");CF.people.push(v);CF.newPerson="";R()}
+function rmPersonCF(i){syncCF();CF.people.splice(i,1);R()}
+function addCatCF(){syncCF();var el=document.getElementById("cf-nc");var v=el?el.value.trim():"";if(!v)return;if(CF.cats.indexOf(v)>=0)return toast("Already exists");if(CF.cats.length>=8)return toast("Max 8 categories");CF.cats.push(v);CF.newCat="";R()}
+function rmCatCF(i){syncCF();if(CF.cats.length<=1)return toast("Need at least 1");CF.cats.splice(i,1);R()}
 
 function createTrip(){
   var el;
@@ -348,8 +354,7 @@ function R(){
         h+='<div class="trip-card" onclick="openTrip(\''+t.id+'\')">';
         h+='<div style="display:flex;justify-content:space-between;align-items:center">';
         h+='<div class="tc-name">'+esc(t.name)+'</div>';
-        h+='<button class="mbtn dng" onclick="event.stopPropagation();removeRecent('+i+')">\u2715</button></div>';
-        h+='<div class="tc-pin">PIN: '+t.pin+'</div></div>';
+        h+='<button class="mbtn dng" onclick="event.stopPropagation();removeRecent('+i+')">\u2715</button></div></div>';
       });h+="</div>"}
     h+="</div>";
   }
@@ -409,7 +414,7 @@ function R(){
     h+='<div class="header"><div class="brand" onclick="goHome()" style="cursor:pointer">\u2190 TripSplit</div>';
     if(isAdmin)h+='<div class="admin-badge">ADMIN</div>';
     h+='<h1 class="title">'+esc(m.name)+'</h1>';
-    h+='<div class="subtitle">'+ppl.length+' people &middot; PIN: '+m.pin+'</div></div>';
+    h+='<div class="subtitle">'+ppl.length+' people</div></div>';
 
     h+='<div class="qstats"><div class="qs"><div class="ql">Budget</div><div class="qv">'+fmt(c.tb)+'</div></div>';
     h+='<div class="qs"><div class="ql">Spent</div><div class="qv" style="color:'+(pct>100?"#ef4444":"#22c55e")+'">'+fmt(c.ta)+'</div></div>';
